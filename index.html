@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stop watch timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="clock-wrapper">
+      <svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="tealToEmerald" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="360" y2="360">
+            <stop offset="0%" stop-color="#00ADEE" />
+            <stop offset="50%" stop-color="#2DD4BF" />
+            <stop offset="100%" stop-color="#10B981" />
+          </linearGradient>
+        </defs>
+
+        <!-- Legs -->
+        <line x1="110" y1="320" x2="85" y2="355" stroke="url(#tealToEmerald)" stroke-width="8" stroke-linecap="round"/>
+        <line x1="290" y1="320" x2="315" y2="355" stroke="url(#tealToEmerald)" stroke-width="8" stroke-linecap="round"/>
+
+        <!-- Top button -->
+        <rect x="190" y="30" width="20" height="22" rx="4" fill="none" stroke="url(#tealToEmerald)" stroke-width="6"/>
+
+        <!-- Outer clock rim -->
+        <circle cx="200" cy="200" r="140" fill="none" stroke="url(#tealToEmerald)" stroke-width="6"/>
+
+        <!-- 12 equal gradient stripe segments forming the dial ring (face stays transparent inside) -->
+        <g>
+          <path d="M 200.00,100.00 L 200.00,62.00 A 138,138 0 0 1 269.00,80.49 L 250.00,113.40 A 100,100 0 0 0 200.00,100.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 250.00,113.40 L 269.00,80.49 A 138,138 0 0 1 319.51,131.00 L 286.60,150.00 A 100,100 0 0 0 250.00,113.40 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 286.60,150.00 L 319.51,131.00 A 138,138 0 0 1 338.00,200.00 L 300.00,200.00 A 100,100 0 0 0 286.60,150.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 300.00,200.00 L 338.00,200.00 A 138,138 0 0 1 319.51,269.00 L 286.60,250.00 A 100,100 0 0 0 300.00,200.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 286.60,250.00 L 319.51,269.00 A 138,138 0 0 1 269.00,319.51 L 250.00,286.60 A 100,100 0 0 0 286.60,250.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 250.00,286.60 L 269.00,319.51 A 138,138 0 0 1 200.00,338.00 L 200.00,300.00 A 100,100 0 0 0 250.00,286.60 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 200.00,300.00 L 200.00,338.00 A 138,138 0 0 1 131.00,319.51 L 150.00,286.60 A 100,100 0 0 0 200.00,300.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 150.00,286.60 L 131.00,319.51 A 138,138 0 0 1 80.49,269.00 L 113.40,250.00 A 100,100 0 0 0 150.00,286.60 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 113.40,250.00 L 80.49,269.00 A 138,138 0 0 1 62.00,200.00 L 100.00,200.00 A 100,100 0 0 0 113.40,250.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 100.00,200.00 L 62.00,200.00 A 138,138 0 0 1 80.49,131.00 L 113.40,150.00 A 100,100 0 0 0 100.00,200.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 113.40,150.00 L 80.49,131.00 A 138,138 0 0 1 131.00,80.49 L 150.00,113.40 A 100,100 0 0 0 113.40,150.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M 150.00,113.40 L 131.00,80.49 A 138,138 0 0 1 200.00,62.00 L 200.00,100.00 A 100,100 0 0 0 150.00,113.40 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+        </g>
+
+        <!-- Inner edge ring (border of the transparent face) -->
+        <circle cx="200" cy="200" r="100" fill="none" stroke="url(#tealToEmerald)" stroke-width="4"/>
+
+        <!-- Stopwatch time display -->
+        <text id="stopwatch-text" x="200" y="200" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="bold" fill="#ffffff">00:00:00</text>
+      </svg>
+
+      <div class="controls">
+        <button id="start-btn">Start</button>
+        <button id="pause-btn">Pause</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

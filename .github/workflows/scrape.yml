@@ -1,0 +1,29 @@
+name: Scrape Devfolio (South India hackathons)
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Run scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: python scrape_devfolio_to_db.py
