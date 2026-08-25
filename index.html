@@ -1,62 +1,852 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stop watch timer</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hack Scout</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b111e">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hack Scout">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,600;1,700;1,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #f0f3f8;
+    --bg-card: #ffffff;
+    --pes-dark: #0b111e;
+    --pes-dark-blue: #111a2e;
+    --pes-blue-active: #0052cc;
+    --pes-mint: #00e5a3;
+    --pes-mint-dark: #00b37e;
+    --pes-magenta: #ff007f;
+    --pes-magenta-dim: #ffebf5;
+    --pes-gold: #c59b27;
+    --pes-gold-bg: #fff9e6;
+    --text-primary: #121824;
+    --text-muted: #64748b;
+    --border-color: #cbd5e1;
+    --border-light: #e2e8f0;
+    --pitch-line: rgba(15, 82, 204, 0.08);
+  }
+ 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+ 
+  body {
+    background-color: var(--bg-main);
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.8) 0%, rgba(240, 243, 248, 0.3) 100%),
+      linear-gradient(rgba(11, 17, 30, 0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(11, 17, 30, 0.015) 1px, transparent 1px);
+    background-size: 100% 100%, 30px 30px, 30px 30px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+ 
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+ 
+  .stadium-lights {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 350px;
+    background: radial-gradient(circle at 50% -10%, rgba(0, 82, 252, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(45deg, transparent 49%, var(--border-light) 49%, var(--border-light) 51%, transparent 51%);
+    background-size: 120px 120px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+ 
+  .reveal {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: revealUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes revealUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+ 
+  header {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 40px 24px 20px;
+    position: relative;
+    z-index: 1;
+  }
+ 
+  .broadcast-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pes-magenta);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    background: var(--pes-magenta-dim);
+    padding: 4px 12px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  }
+  .broadcast-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--pes-magenta);
+    border-radius: 50%;
+    animation: pulseRed 1.2s infinite;
+  }
+  @keyframes pulseRed {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+  }
+ 
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    font-size: clamp(38px, 6vw, 68px);
+    line-height: 0.95;
+    color: var(--pes-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+ 
+  h1 .accent {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--pes-dark) 0%, var(--pes-dark-blue) 100%);
+    padding: 4px 18px;
+    display: inline-block;
+    transform: skewX(-10deg);
+    border-left: 5px solid var(--pes-mint);
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+  }
+  h1 .accent span { display: inline-block; transform: skewX(10deg); }
+ 
+  .subhead {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 580px;
+    margin-top: 15px;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+ 
+  .stat-strip {
+    max-width: 1140px;
+    margin: 30px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+ 
+  .stat-cell {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  }
+ 
+  .stat-cell::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--pes-blue-active);
+  }
+  .stat-cell:nth-child(2)::before {
+    background: var(--pes-mint);
+  }
+  .stat-cell:nth-child(3)::before {
+    background: var(--pes-magenta);
+  }
+ 
+  .stat-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 42px;
+    color: var(--pes-dark);
+    line-height: 1;
+  }
+ 
+  .stat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-label::after {
+    content: '';
+    flex-grow: 1;
+    height: 1px;
+    background: var(--border-light);
+  }
+ 
+  @media (max-width: 680px) {
+    .stat-strip { grid-template-columns: 1fr; gap: 8px; }
+  }
+ 
+  .map-section {
+    max-width: 1140px;
+    margin: 35px auto 0;
+    padding: 0 24px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+  .pitch-canvas {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .pitch-canvas::before {
+    content: '';
+    position: absolute;
+    inset: 15px;
+    border: 1.5px dashed var(--pitch-line);
+    pointer-events: none;
+    border-radius: 4px;
+  }
+  .pitch-center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px;
+    height: 140px;
+    border: 1.5px dashed var(--pitch-line);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+ 
+  #mapSvg { width: 100%; max-width: 250px; height: auto; position: relative; z-index: 2; }
+ 
+  .map-outline {
+    fill: rgba(0, 82, 204, 0.02);
+    stroke: var(--pes-dark);
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+  }
+ 
+  .map-dot { 
+    fill: var(--pes-blue-active); 
+    stroke: #ffffff;
+    stroke-width: 1.5;
+    r: 6;
+  }
+ 
+  .map-dot-pulse {
+    fill: none;
+    stroke: var(--pes-blue-active);
+    stroke-width: 1.5;
+    opacity: 0;
+    animation: mapPulse 2s ease-out infinite;
+  }
+  .state-Telangana .map-dot { fill: var(--pes-magenta); }
+  .state-Telangana .map-dot-pulse { stroke: var(--pes-magenta); }
+  .state-Karnataka .map-dot { fill: var(--pes-mint-dark); }
+  .state-Karnataka .map-dot-pulse { stroke: var(--pes-mint-dark); }
+  @keyframes mapPulse {
+    0% { r: 5; opacity: 0.8; }
+    100% { r: 18; opacity: 0; }
+  }
+ 
+  .map-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 9px;
+    fill: var(--pes-dark);
+    letter-spacing: 0.05em;
+  }
+ 
+  .controls {
+    max-width: 1140px;
+    margin: 40px auto 0;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+  }
+ 
+  .filter-group { 
+    display: flex; 
+    gap: 6px; 
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 4px;
+  }
+ 
+  .filter-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 8px 20px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: skewX(-10deg);
+  }
+  .filter-btn span {
+    display: inline-block;
+    transform: skewX(10deg);
+  }
+ 
+  .filter-btn:hover { color: var(--pes-dark); background: rgba(255,255,255,0.6); }
+ 
+  .filter-btn.active {
+    background: var(--pes-dark);
+    color: #ffffff;
+  }
+ 
+  .filter-btn:focus-visible { outline: 2px solid var(--pes-magenta); }
+ 
+  .result-count {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    background: #ffffff;
+    padding: 6px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+ 
+  main {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 20px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+ 
+  .event-list { display: flex; flex-direction: column; gap: 10px; }
+ 
+  .event-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
+    padding: 16px 24px;
+    display: grid;
+    grid-template-columns: 85px 1fr auto auto auto;
+    gap: 20px;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: revealCard 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes revealCard {
+    to { opacity: 1; transform: translateY(0); }
+  }
+ 
+  .event-card:hover {
+    border-color: var(--pes-dark);
+    box-shadow: 0 4px 12px rgba(11, 17, 30, 0.06);
+    transform: translateY(-2px);
+  }
+ 
+  .event-card:focus-visible { outline: 2px solid var(--pes-magenta); }
+ 
+  @media (max-width: 768px) {
+    .event-card { 
+      grid-template-columns: 1fr; 
+      gap: 12px; 
+      padding: 18px 20px;
+    }
+  }
+ 
+  .event-date-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--bg-main) 0%, #e2e8f0 100%);
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 0;
+    min-height: 65px;
+    width: 65px;
+    font-family: 'Barlow Condensed', sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
+  .event-date-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--pes-blue-active);
+  }
+  .event-card.soon-gold .event-date-block {
+    background: linear-gradient(135deg, var(--pes-gold-bg) 0%, #fbe9b7 100%);
+    border-color: var(--pes-gold);
+  }
+  .event-card.soon-gold .event-date-block::before {
+    background: var(--pes-gold);
+  }
+  .event-card.soon-gold .event-date-day {
+    color: #926d03;
+  }
+ 
+  .event-date-day { 
+    font-size: 28px; 
+    font-weight: 800; 
+    font-style: italic; 
+    line-height: 1; 
+    color: var(--pes-dark);
+  }
+  .event-date-month {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    margin-top: 1px;
+    color: var(--text-muted);
+  }
+ 
+  .event-body h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    color: var(--pes-dark);
+    margin-bottom: 4px;
+    transition: color 0.15s;
+  }
+  
+  .event-card:hover .event-body h3 {
+    color: var(--pes-blue-active);
+  }
+ 
+  .event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .position-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 12px;
+    border-radius: 3px;
+    text-align: center;
+    min-width: 50px;
+    display: inline-block;
+    transform: skewX(-10deg);
+  }
+  .position-badge span {
+    display: inline-block;
+    transform: skewX(10deg);
+  }
+ 
+  .badge-online { 
+    background: #e6fbf4; 
+    color: var(--pes-mint-dark); 
+    border: 1px solid var(--pes-mint); 
+  }
+  .badge-inperson { 
+    background: var(--pes-magenta-dim); 
+    color: var(--pes-magenta); 
+    border: 1px solid rgba(255, 0, 127, 0.3); 
+  }
+ 
+  .event-arrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    color: var(--border-color);
+    font-size: 20px;
+    transition: transform 0.2s, color 0.2s;
+    background: var(--bg-main);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .event-card:hover .event-arrow { 
+    transform: translateX(3px); 
+    color: #ffffff; 
+    background: var(--pes-dark);
+  }
+ 
+  .state-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+ 
+  footer {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.02em;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 24px;
+  }
+  footer a { color: var(--pes-dark); text-decoration: none; font-weight: 600; }
+  footer a:hover { text-decoration: underline; }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.4;
+    transition: opacity 0.15s, transform 0.15s;
+    padding: 4px 6px;
+    border-radius: 4px;
+    z-index: 2;
+    position: relative;
+  }
+  .delete-btn:hover {
+    opacity: 1;
+    transform: scale(1.15);
+    background: rgba(255, 0, 127, 0.08);
+  }
+</style>
 </head>
 <body>
-    <div class="clock-wrapper">
-      <svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="tealToEmerald" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="360" y2="360">
-            <stop offset="0%" stop-color="#00ADEE" />
-            <stop offset="50%" stop-color="#2DD4BF" />
-            <stop offset="100%" stop-color="#10B981" />
-          </linearGradient>
-        </defs>
-
-        <!-- Legs -->
-        <line x1="110" y1="320" x2="85" y2="355" stroke="url(#tealToEmerald)" stroke-width="8" stroke-linecap="round"/>
-        <line x1="290" y1="320" x2="315" y2="355" stroke="url(#tealToEmerald)" stroke-width="8" stroke-linecap="round"/>
-
-        <!-- Top button -->
-        <rect x="190" y="30" width="20" height="22" rx="4" fill="none" stroke="url(#tealToEmerald)" stroke-width="6"/>
-
-        <!-- Outer clock rim -->
-        <circle cx="200" cy="200" r="140" fill="none" stroke="url(#tealToEmerald)" stroke-width="6"/>
-
-        <!-- 12 equal gradient stripe segments forming the dial ring (face stays transparent inside) -->
-        <g>
-          <path d="M 200.00,100.00 L 200.00,62.00 A 138,138 0 0 1 269.00,80.49 L 250.00,113.40 A 100,100 0 0 0 200.00,100.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 250.00,113.40 L 269.00,80.49 A 138,138 0 0 1 319.51,131.00 L 286.60,150.00 A 100,100 0 0 0 250.00,113.40 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 286.60,150.00 L 319.51,131.00 A 138,138 0 0 1 338.00,200.00 L 300.00,200.00 A 100,100 0 0 0 286.60,150.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 300.00,200.00 L 338.00,200.00 A 138,138 0 0 1 319.51,269.00 L 286.60,250.00 A 100,100 0 0 0 300.00,200.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 286.60,250.00 L 319.51,269.00 A 138,138 0 0 1 269.00,319.51 L 250.00,286.60 A 100,100 0 0 0 286.60,250.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 250.00,286.60 L 269.00,319.51 A 138,138 0 0 1 200.00,338.00 L 200.00,300.00 A 100,100 0 0 0 250.00,286.60 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 200.00,300.00 L 200.00,338.00 A 138,138 0 0 1 131.00,319.51 L 150.00,286.60 A 100,100 0 0 0 200.00,300.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 150.00,286.60 L 131.00,319.51 A 138,138 0 0 1 80.49,269.00 L 113.40,250.00 A 100,100 0 0 0 150.00,286.60 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 113.40,250.00 L 80.49,269.00 A 138,138 0 0 1 62.00,200.00 L 100.00,200.00 A 100,100 0 0 0 113.40,250.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 100.00,200.00 L 62.00,200.00 A 138,138 0 0 1 80.49,131.00 L 113.40,150.00 A 100,100 0 0 0 100.00,200.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 113.40,150.00 L 80.49,131.00 A 138,138 0 0 1 131.00,80.49 L 150.00,113.40 A 100,100 0 0 0 113.40,150.00 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
-          <path d="M 150.00,113.40 L 131.00,80.49 A 138,138 0 0 1 200.00,62.00 L 200.00,100.00 A 100,100 0 0 0 150.00,113.40 Z" fill="url(#tealToEmerald)" stroke="#ffffff" stroke-width="1.5"/>
+ 
+<div class="stadium-lights"></div>
+<div class="grid-bg"></div>
+ 
+<header>
+  <div class="broadcast-tag reveal" style="animation-delay: 0s">Live event database — updated daily</div>
+  <h1 class="reveal" style="animation-delay: 0.05s">Event board<br><span class="accent"><span>South India Dev Hub</span></span></h1>
+  <p class="subhead reveal" style="animation-delay: 0.12s">
+    List of active hackathons and coding tournaments across Kerala, Tamil Nadu, Karnataka, Andhra Pradesh, and Telangana. Updated daily.
+  </p>
+</header>
+ 
+<div class="stat-strip">
+  <div class="stat-cell reveal" style="animation-delay: 0.18s">
+    <div class="stat-num" id="statTotal">–</div>
+    <div class="stat-label">Total events</div>
+  </div>
+  <div class="stat-cell reveal" style="animation-delay: 0.24s">
+    <div class="stat-num" id="statStates">–</div>
+    <div class="stat-label">Active states</div>
+  </div>
+  <div class="stat-cell reveal" style="animation-delay: 0.30s">
+    <div class="stat-num" id="statSoonest">–</div>
+    <div class="stat-label">Days until start</div>
+  </div>
+</div>
+ 
+<div class="map-section reveal" style="animation-delay: 0.35s">
+  <div class="pitch-canvas">
+    <div class="pitch-center-circle"></div>
+    <svg id="mapSvg" viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg">
+      <path class="map-outline" d="M120 10 L160 8 L180 30 L195 60 L230 75 L250 110 L245 150 L260 180 L255 220 L230 250 L210 290 L180 320 L150 330 L130 300 L110 260 L90 220 L70 190 L60 150 L75 110 L70 70 L90 40 Z"/>
+      <g id="mapDots"></g>
+    </svg>
+  </div>
+</div>
+ 
+<div class="controls reveal" style="animation-delay: 0.40s">
+  <div class="filter-group" role="group" aria-label="Filter by format">
+    <button class="filter-btn active" data-filter="all"><span>ALL</span></button>
+    <button class="filter-btn" data-filter="online"><span>ONLINE</span></button>
+    <button class="filter-btn" data-filter="offline"><span>OFFLINE</span></button>
+  </div>
+  <div class="result-count" id="resultCount">0 RESULTS</div>
+</div>
+ 
+<main>
+  <div class="event-list" id="eventList">
+    <div class="state-msg">ESTABLISHING CONNECTION TO SIGNAL FEED…</div>
+  </div>
+</main>
+ 
+<footer>
+  <div>Powered by Agnel-Devs · source codes active</div>
+  <div><a href="https://github.com/Agnel-Devs/south-India-events-scraper" target="_blank" rel="noopener">SOURCE REPOSITORY</a></div>
+</footer>
+ 
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+ 
+const SUPABASE_URL = "https://rbbkizumapqrphuzpwux.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cou8KAuonSSGM9vlNLegDQ_E3KitfCf";
+ 
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+ 
+const STATE_COORDS = {
+  "Kerala":          [{x: 95,  y: 260, label: "KER"}],
+  "Tamil Nadu":      [{x: 175, y: 260, label: "TN"}],
+  "Karnataka":       [{x: 130, y: 150, label: "KAR"}],
+  "Andhra Pradesh":  [{x: 200, y: 150, label: "AP"}],
+  "Telangana":       [{x: 190, y: 90,  label: "TS"}],
+  "Puducherry":      [{x: 190, y: 270, label: "PY"}],
+};
+ 
+let allEvents = [];
+let activeFilter = "all";
+ 
+const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+ 
+function fmtDate(iso) {
+  if (!iso) return { day: "—", month: "TBA" };
+  const d = new Date(iso);
+  return { day: d.getUTCDate(), month: MONTHS[d.getUTCMonth()] };
+}
+ 
+function daysUntil(iso) {
+  if (!iso) return null;
+  const diff = new Date(iso) - new Date();
+  return Math.max(0, Math.ceil(diff / 86400000));
+}
+ 
+function animateCount(el, target) {
+  if (target === "–" || isNaN(target)) { el.textContent = target; return; }
+  const duration = 600;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * target);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+ 
+function render() {
+  const list = document.getElementById('eventList');
+  const filtered = allEvents.filter(e => {
+    if (activeFilter === "online") return e.is_online;
+    if (activeFilter === "offline") return !e.is_online;
+    return true;
+  });
+ 
+  document.getElementById('resultCount').textContent =
+    `${filtered.length} EVENT${filtered.length !== 1 ? 'S' : ''}`;
+ 
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="state-msg">No events match this filter. Please try again.</div>`;
+    return;
+  }
+ 
+  list.innerHTML = filtered.map((e, i) => {
+    const { day, month } = fmtDate(e.starts_at);
+    const regDays = daysUntil(e.reg_ends_at);
+    const startsDays = daysUntil(e.starts_at);
+    const locationLabel = e.is_online ? "Online" : (e.location ? (e.location.split(',').slice(-2, -1)[0]?.trim() || e.location).toUpperCase() : "TBA");
+ 
+    const isSoonGold = (startsDays !== null && startsDays <= 3) ? 'soon-gold' : '';
+    return `
+      <a class="event-card ${isSoonGold}" href="${e.url || '#'}" target="_blank" rel="noopener" style="animation-delay: ${Math.min(i * 0.04, 0.4)}s">
+        <div class="event-date-block">
+          <div class="event-date-day">${day}</div>
+          <div class="event-date-month">${month}</div>
+        </div>
+        <div class="event-body">
+          <h3>${escapeHtml(e.name)}</h3>
+          <div class="event-meta">
+            <span class="meta-item">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${escapeHtml(locationLabel)}
+            </span>
+            ${regDays !== null ? `
+              <span class="meta-item" style="color: ${regDays <= 2 ? 'var(--pes-magenta)' : 'inherit'}">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Registration ends in ${regDays} days
+              </span>
+            ` : ''}
+            ${e.participants_count ? `
+              <span class="meta-item">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                ${e.participants_count.toLocaleString()} participants
+              </span>
+            ` : ''}
+          </div>
+        </div>
+        <div class="position-badge ${e.is_online ? 'badge-online' : 'badge-inperson'}">
+          <span>${e.is_online ? 'Online' : 'Offline'}</span>
+        </div>
+        <button class="delete-btn" onclick="event.preventDefault(); event.stopPropagation(); deleteEvent(${e.id}, this)" title="Delete event">🗑️</button>
+        <span class="event-arrow">&gt;</span>
+      </a>
+    `;
+  }).join('');
+}
+ 
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+ 
+function renderStats() {
+  animateCount(document.getElementById('statTotal'), allEvents.length);
+ 
+  const states = new Set(allEvents.map(e => e.state).filter(Boolean));
+  animateCount(document.getElementById('statStates'), states.size);
+ 
+  const upcoming = allEvents
+    .map(e => daysUntil(e.starts_at))
+    .filter(d => d !== null)
+    .sort((a, b) => a - b);
+  animateCount(document.getElementById('statSoonest'), upcoming.length ? upcoming[0] : "–");
+ 
+  const dotsGroup = document.getElementById('mapDots');
+  dotsGroup.innerHTML = '';
+  states.forEach(state => {
+    (STATE_COORDS[state] || []).forEach(pos => {
+      const sanitizedStateClass = state.replace(/\s+/g, '-');
+      dotsGroup.innerHTML += `
+        <g class="state-${sanitizedStateClass}">
+          <circle class="map-dot-pulse" cx="${pos.x}" cy="${pos.y}" r="6"/>
+          <circle class="map-dot" cx="${pos.x}" cy="${pos.y}" r="6"/>
+          <text class="map-label" x="${pos.x + 11}" y="${pos.y + 4}">${pos.label}</text>
         </g>
+      `;
+    });
+  });
+}
+ 
+async function loadEvents() {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .order('starts_at', { ascending: true });
+ 
+  if (error) {
+    document.getElementById('eventList').innerHTML =
+      `<div class="state-msg" style="color: var(--pes-magenta);">FEED CONNECTION ERROR — ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+ 
+  allEvents = data || [];
+  renderStats();
+  render();
+}
+ 
+async function deleteEvent(id, btnElement) {
+  if (!confirm('Delete this event?')) return;
 
-        <!-- Inner edge ring (border of the transparent face) -->
-        <circle cx="200" cy="200" r="100" fill="none" stroke="url(#tealToEmerald)" stroke-width="4"/>
+  const { error } = await supabase.from('events').delete().eq('id', id);
 
-        <!-- Stopwatch time display -->
-        <text id="stopwatch-text" x="200" y="200" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="bold" fill="#ffffff">00:00:00</text>
-      </svg>
+  if (error) {
+    alert('Failed to delete: ' + error.message);
+    return;
+  }
 
-      <div class="controls">
-        <button id="start-btn">Start</button>
-        <button id="pause-btn">Pause</button>
-        <button id="reset-btn">Reset</button>
-      </div>
-    </div>
+  allEvents = allEvents.filter(e => e.id !== id);
+  renderStats();
+  render();
+}
 
-    <script src="script.js"></script>
+window.deleteEvent = deleteEvent;
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+});
+ 
+loadEvents();
+</script>
+ 
 </body>
 </html>
